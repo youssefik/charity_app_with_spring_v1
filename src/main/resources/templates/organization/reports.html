@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapports - Organisation</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+        }
+        .sidebar .nav-link {
+            color: #fff;
+            padding: 1rem;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #495057;
+        }
+        .sidebar .nav-link.active {
+            background-color: #007bff;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="sidebar-sticky">
+                    <div class="text-center py-4">
+                        <h4 class="text-white" th:text="${organization.name}">Nom de l'organisation</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard}">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Tableau de bord
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/actions}">
+                                <i class="fas fa-hands-helping"></i>
+                                Actions caritatives
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/donations}">
+                                <i class="fas fa-hand-holding-usd"></i>
+                                Dons
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" th:href="@{/organization/dashboard/reports}">
+                                <i class="fas fa-chart-bar"></i>
+                                Rapports
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/profile}">
+                                <i class="fas fa-user-cog"></i>
+                                Profil
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Rapports</h1>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary" onclick="exportToCSV()">
+                            <i class="fas fa-file-csv"></i> Exporter CSV
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="exportToPDF()">
+                            <i class="fas fa-file-pdf"></i> Exporter PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtres -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form th:action="@{/organization/dashboard/reports}" method="get" class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Période</label>
+                                            <select name="period" class="form-control">
+                                                <option value="week">Cette semaine</option>
+                                                <option value="month">Ce mois</option>
+                                                <option value="quarter">Ce trimestre</option>
+                                                <option value="year">Cette année</option>
+                                                <option value="custom">Personnalisé</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 custom-date-range" style="display: none;">
+                                        <div class="form-group">
+                                            <label>Date de début</label>
+                                            <input type="date" name="startDate" class="form-control" th:value="${startDate}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 custom-date-range" style="display: none;">
+                                        <div class="form-group">
+                                            <label>Date de fin</label>
+                                            <input type="date" name="endDate" class="form-control" th:value="${endDate}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>&nbsp;</label>
+                                            <button type="submit" class="btn btn-primary btn-block">Générer le rapport</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Résumé -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Total des dons</h5>
+                                <h2 class="card-text" th:text="${#numbers.formatDecimal(donationReport.amount, 1, 'COMMA', 2, 'POINT') + ' €'}">0.00 €</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Nombre de dons</h5>
+                                <h2 class="card-text" th:text="${donationReport.count}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Don moyen</h5>
+                                <h2 class="card-text" th:text="${#numbers.formatDecimal(donationReport.averageAmount, 1, 'COMMA', 2, 'POINT') + ' €'}">0.00 €</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Actions actives</h5>
+                                <h2 class="card-text" th:text="${activeActions}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphiques -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Dons par action</h5>
+                                <div class="chart-container">
+                                    <canvas id="donationsByActionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Évolution des dons</h5>
+                                <div class="chart-container">
+                                    <canvas id="donationsEvolutionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top donateurs -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Top donateurs</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Donateur</th>
+                                        <th>Nombre de dons</th>
+                                        <th>Montant total</th>
+                                        <th>Don moyen</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="donor : ${topDonors}">
+                                        <td th:text="${donor.donorName}">Donateur</td>
+                                        <td th:text="${donor.donationCount}">0</td>
+                                        <td th:text="${#numbers.formatDecimal(donor.totalAmount, 1, 'COMMA', 2, 'POINT') + ' €'}">0.00 €</td>
+                                        <td th:text="${#numbers.formatDecimal(donor.averageAmount, 1, 'COMMA', 2, 'POINT') + ' €'}">0.00 €</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script th:inline="javascript">
+        // Données pour les graphiques
+        const donationsByAction = /*[[${donationsByAction}]]*/ {};
+        const donationsEvolution = /*[[${donationsEvolution}]]*/ {};
+
+        // Graphique des dons par action
+        new Chart(document.getElementById('donationsByActionChart'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(donationsByAction),
+                datasets: [{
+                    data: Object.values(donationsByAction),
+                    backgroundColor: [
+                        '#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8',
+                        '#6610f2', '#fd7e14', '#20c997', '#e83e8c', '#6f42c1'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+
+        // Graphique de l'évolution des dons
+        new Chart(document.getElementById('donationsEvolutionChart'), {
+            type: 'line',
+            data: {
+                labels: Object.keys(donationsEvolution),
+                datasets: [{
+                    label: 'Montant des dons',
+                    data: Object.values(donationsEvolution),
+                    borderColor: '#007bff',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Gestion de l'affichage des dates personnalisées
+        $('select[name="period"]').on('change', function() {
+            if ($(this).val() === 'custom') {
+                $('.custom-date-range').show();
+            } else {
+                $('.custom-date-range').hide();
+            }
+        });
+
+        function exportToCSV() {
+            window.location.href = '/organization/dashboard/reports/export/csv?' + new URLSearchParams({
+                period: document.querySelector('select[name="period"]').value,
+                startDate: document.querySelector('input[name="startDate"]').value,
+                endDate: document.querySelector('input[name="endDate"]').value
+            });
+        }
+
+        function exportToPDF() {
+            window.location.href = '/organization/dashboard/reports/export/pdf?' + new URLSearchParams({
+                period: document.querySelector('select[name="period"]').value,
+                startDate: document.querySelector('input[name="startDate"]').value,
+                endDate: document.querySelector('input[name="endDate"]').value
+            });
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/organization}">
+<head>
+    <title>Modifier l'action</title>
+    <style>
+        .form-card {
+            border-left: 4px solid #28a745;
+        }
+        .form-control:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        .btn-primary {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .btn-primary:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="page-title">Modifier l'action</div>
+
+    <div layout:fragment="page-content">
+        <!-- Messages Flash -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div class="card form-card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Modifier l'action</h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/organization/dashboard/actions/{id}/update(id=${action.id})}" 
+                      th:object="${action}" 
+                      method="post">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                    
+                    <div class="form-group">
+                        <label for="title">Titre</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="title" 
+                               th:field="*{title}" 
+                               required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">
+                            Erreur de titre
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea class="form-control" 
+                                  id="description" 
+                                  th:field="*{description}" 
+                                  rows="4" 
+                                  required></textarea>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">
+                            Erreur de description
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Catégorie</label>
+                        <select class="form-control" 
+                                id="category" 
+                                th:field="*{category}" 
+                                required>
+                            <option value="">Sélectionner une catégorie</option>
+                            <option th:each="cat : ${categories}" 
+                                    th:value="${cat.id}" 
+                                    th:text="${cat.name}">Catégorie</option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}" th:errors="*{category}">
+                            Erreur de catégorie
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetAmount">Montant cible</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="targetAmount" 
+                               th:field="*{targetAmount}" 
+                               step="0.01" 
+                               required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('targetAmount')}" th:errors="*{targetAmount}">
+                            Erreur de montant cible
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="startDate">Date de début</label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="startDate" 
+                               th:field="*{startDate}" 
+                               required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}">
+                            Erreur de date de début
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endDate">Date de fin</label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="endDate" 
+                               th:field="*{endDate}" 
+                               required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}">
+                            Erreur de date de fin
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Statut</label>
+                        <select class="form-control" 
+                                id="status" 
+                                th:field="*{status}" 
+                                required>
+                            <option value="DRAFT">Brouillon</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="COMPLETED">Terminée</option>
+                            <option value="CANCELLED">Annulée</option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">
+                            Erreur de statut
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer les modifications
+                        </button>
+                        <a th:href="@{/organization/dashboard/actions}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

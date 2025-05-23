@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/organization}">
+<head>
+    <title>Détails de la donation</title>
+    <style>
+        .donation-details {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 2rem;
+        }
+        .status-badge {
+            font-size: 1rem;
+            padding: 0.5em 1em;
+        }
+        .action-card {
+            border-left: 4px solid #28a745;
+        }
+        .donor-card {
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="page-title">Détails de la donation</div>
+
+    <div layout:fragment="page-content">
+        <!-- Messages Flash -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div class="row">
+            <!-- Informations principales -->
+            <div class="col-md-8">
+                <div class="card donation-details mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="card-title mb-0">Donation #<span th:text="${donation.id}">1</span></h4>
+                            <span th:class="${'badge ' + 
+                                (donation.status == 'PENDING' ? 'badge-warning' : 
+                                 donation.status == 'VALIDATED' ? 'badge-success' : 
+                                 'badge-danger')}"
+                                  th:text="${donation.status}">PENDING</span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Date de la donation :</strong></p>
+                                <p th:text="${#temporals.format(donation.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Montant :</strong></p>
+                                <h3 class="text-primary" th:text="${#numbers.formatDecimal(donation.amount, 1, 2)} + ' €'">100.00 €</h3>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <p><strong>Message du donateur :</strong></p>
+                                <p th:text="${donation.message ?: 'Aucun message'}">Message du donateur</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations sur l'action -->
+                <div class="card action-card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Action associée</h5>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${donation.action.title}">Titre de l'action</h5>
+                        <p class="card-text" th:text="${donation.action.description}">Description de l'action</p>
+                        <div class="mt-3">
+                            <a th:href="@{/organization/dashboard/actions/{id}(id=${donation.action.id})}" 
+                               class="btn btn-outline-success">
+                                <i class="fas fa-external-link-alt"></i> Voir l'action
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations sur le donateur -->
+            <div class="col-md-4">
+                <div class="card donor-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Informations du donateur</h5>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${donation.donorName}">Nom du donateur</h5>
+                        <p class="card-text" th:text="${donation.donorEmail}">email@example.com</p>
+                        
+                        <div class="mt-4" th:if="${donation.status == 'PENDING'}">
+                            <form th:action="@{/organization/dashboard/donations/{id}/validate(id=${donation.id})}" 
+                                  method="post" 
+                                  class="mb-2">
+                                <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-success btn-block">
+                                    <i class="fas fa-check"></i> Valider la donation
+                                </button>
+                            </form>
+                            <form th:action="@{/organization/dashboard/donations/{id}/reject(id=${donation.id})}" 
+                                  method="post">
+                                <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-danger btn-block">
+                                    <i class="fas fa-times"></i> Rejeter la donation
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bouton retour -->
+        <div class="mt-4">
+            <a th:href="@{/organization/dashboard/donations}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+</body>
+</html> 

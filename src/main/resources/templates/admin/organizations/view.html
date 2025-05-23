@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title th:text="${organization.name + ' | Charity App'}">Détails Organisation | Charity App</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- Content Header -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Détails de l'Organisation</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/admin/dashboard">Tableau de bord</a></li>
+                            <li class="breadcrumb-item"><a href="/admin/organizations">Organisations</a></li>
+                            <li class="breadcrumb-item active">Détails</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="content">
+            <div class="container-fluid">
+                <!-- Alert Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${success}"></span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="row">
+                    <!-- Organization Info -->
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Informations de l'Organisation</h3>
+                                <div class="card-tools">
+                                    <a href="/admin/organizations" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <dl>
+                                            <dt>Nom</dt>
+                                            <dd th:text="${organization.name}">Nom de l'organisation</dd>
+                                            
+                                            <dt>Email</dt>
+                                            <dd th:text="${organization.contactEmail}">email@org.com</dd>
+                                            
+                                            <dt>Statut</dt>
+                                            <dd>
+                                                <span th:class="${'badge badge-' + 
+                                                    (organization.status == T(com.example.charity_app_v1.model.OrganizationStatus).APPROVED ? 'success' : 
+                                                    (organization.status == T(com.example.charity_app_v1.model.OrganizationStatus).SUSPENDED ? 'danger' : 
+                                                    'warning'))}"
+                                                    th:text="${organization.status}">
+                                                </span>
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <dl>
+                                            <dt>Date de création</dt>
+                                            <dd th:text="${#temporals.format(organization.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</dd>
+                                            
+                                            <dt>Dernière mise à jour</dt>
+                                            <dd th:text="${#temporals.format(organization.updatedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Organization Actions -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Actions</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="btn-group">
+                                    <button th:if="${organization.status == T(com.example.charity_app_v1.model.OrganizationStatus).PENDING}"
+                                            type="button" 
+                                            class="btn btn-success" 
+                                            data-toggle="modal" 
+                                            data-target="#approveModal">
+                                        <i class="fas fa-check"></i> Approuver
+                                    </button>
+                                    <button th:if="${organization.status == T(com.example.charity_app_v1.model.OrganizationStatus).PENDING}"
+                                            type="button" 
+                                            class="btn btn-danger" 
+                                            data-toggle="modal" 
+                                            data-target="#rejectModal">
+                                        <i class="fas fa-times"></i> Rejeter
+                                    </button>
+                                    <button th:if="${organization.status != T(com.example.charity_app_v1.model.OrganizationStatus).SUSPENDED}"
+                                            type="button" 
+                                            class="btn btn-warning" 
+                                            data-toggle="modal" 
+                                            data-target="#suspendModal">
+                                        <i class="fas fa-ban"></i> Suspendre
+                                    </button>
+                                    <button th:if="${organization.status == T(com.example.charity_app_v1.model.OrganizationStatus).SUSPENDED}"
+                                            type="button" 
+                                            class="btn btn-info" 
+                                            data-toggle="modal" 
+                                            data-target="#reactivateModal">
+                                        <i class="fas fa-sync"></i> Réactiver
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Organization Stats -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Statistiques</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="small-box bg-info">
+                                    <div class="inner">
+                                        <h3 th:text="${organization.actionsCount ?: 0}">0</h3>
+                                        <p>Actions de charité</p>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="fas fa-hands-helping"></i>
+                                    </div>
+                                </div>
+                                
+                                <div class="small-box bg-success">
+                                    <div class="inner">
+                                        <h3 th:text="${organization.donationsCount ?: 0}">0</h3>
+                                        <p>Dons reçus</p>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="fas fa-hand-holding-heart"></i>
+                                    </div>
+                                </div>
+                                
+                                <div class="small-box bg-warning">
+                                    <div class="inner">
+                                        <h3 th:text="${organization.volunteersCount ?: 0}">0</h3>
+                                        <p>Bénévoles</p>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal d'approbation -->
+        <div class="modal fade" id="approveModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmer l'approbation</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir approuver l'organisation <strong th:text="${organization.name}"></strong> ?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <form th:action="@{/admin/organizations/{id}/approve(id=${organization.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> Confirmer l'approbation
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de rejet -->
+        <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Rejeter l'organisation</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form th:action="@{/admin/organizations/{id}/reject(id=${organization.id})}" method="post">
+                        <div class="modal-body">
+                            <p>Veuillez fournir une raison pour le rejet de l'organisation <strong th:text="${organization.name}"></strong> :</p>
+                            <div class="form-group">
+                                <textarea class="form-control" name="reason" rows="3" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times"></i> Confirmer le rejet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de suspension -->
+        <div class="modal fade" id="suspendModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Suspendre l'organisation</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form th:action="@{/admin/organizations/{id}/suspend(id=${organization.id})}" method="post">
+                        <div class="modal-body">
+                            <p>Veuillez fournir une raison pour la suspension de l'organisation <strong th:text="${organization.name}"></strong> :</p>
+                            <div class="form-group">
+                                <textarea class="form-control" name="reason" rows="3" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-ban"></i> Confirmer la suspension
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de réactivation -->
+        <div class="modal fade" id="reactivateModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Réactiver l'organisation</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir réactiver l'organisation <strong th:text="${organization.name}"></strong> ?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <form th:action="@{/admin/organizations/{id}/reactivate(id=${organization.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-sync"></i> Confirmer la réactivation
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

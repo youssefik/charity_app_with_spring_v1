@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Actions caritatives - Organisation</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+        }
+        .sidebar .nav-link {
+            color: #fff;
+            padding: 1rem;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #495057;
+        }
+        .sidebar .nav-link.active {
+            background-color: #007bff;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="sidebar-sticky">
+                    <div class="text-center py-4">
+                        <h4 class="text-white" th:text="${organization.name}">Nom de l'organisation</h4>
+        </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard}">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Tableau de bord
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" th:href="@{/organization/dashboard/actions}">
+                                <i class="fas fa-hands-helping"></i>
+                                Actions caritatives
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/donations}">
+                                <i class="fas fa-hand-holding-usd"></i>
+                                Dons
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/reports}">
+                                <i class="fas fa-chart-bar"></i>
+                                Rapports
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/profile}">
+                                <i class="fas fa-user-cog"></i>
+                                Profil
+                            </a>
+                        </li>
+                    </ul>
+        </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Actions caritatives</h1>
+                    <div class="btn-group">
+            <a th:href="@{/organization/dashboard/actions/create}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Nouvelle action
+            </a>
+                    </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form th:action="@{/organization/dashboard/actions}" method="get" class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Statut</label>
+                                    <select name="status" class="form-control">
+                                        <option value="">Tous</option>
+                                                <option th:each="status : ${statuses}"
+                                                th:value="${status}"
+                                                th:text="${status}">Statut</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                            <label>Catégorie</label>
+                                            <select name="categoryId" class="form-control">
+                                                <option value="">Toutes</option>
+                                                <option th:each="category : ${categories}"
+                                                        th:value="${category.id}"
+                                                        th:text="${category.name}">Catégorie</option>
+                                            </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary btn-block">Filtrer</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <!-- Liste des actions -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                            <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Titre</th>
+                                <th>Catégorie</th>
+                                <th>Objectif</th>
+                                <th>Collecté</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="action : ${actions}">
+                                        <td th:text="${action.title}">Titre</td>
+                                <td th:text="${action.categoryName}">Catégorie</td>
+                                        <td th:text="${#numbers.formatDecimal(action.targetAmount, 1, 'COMMA', 2, 'POINT') + ' €'}">0.00 €</td>
+                                        <td th:text="${#numbers.formatDecimal(action.currentAmount, 1, 'COMMA', 2, 'POINT') + ' €'}">0.00 €</td>
+                                        <td>
+                                            <span class="badge" th:classappend="${action.status == T(com.example.charity_app_v1.model.ActionStatus).ACTIVE ? 'badge-success' : 'badge-warning'}"
+                                          th:text="${action.status}">Statut</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a th:href="@{/organization/dashboard/actions/{id}/edit(id=${action.id})}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                                <button class="btn btn-sm btn-outline-danger" 
+                                                        th:onclick="'deleteAction(' + ${action.id} + ')'">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de suppression -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmer la suppression</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer cette action ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <form id="deleteForm" method="post" style="display: inline;">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script th:inline="javascript">
+            function deleteAction(id) {
+                $('#deleteForm').attr('action', '/organization/dashboard/actions/' + id + '/delete');
+                $('#deleteModal').modal('show');
+            }
+        </script>
+</body>
+</html> 

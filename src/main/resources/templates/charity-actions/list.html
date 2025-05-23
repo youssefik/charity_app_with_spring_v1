@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Actions Caritatives - Charity App</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- Filters Section -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form th:action="@{/charity-actions}" method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="category" class="form-label">Catégorie</label>
+                        <select class="form-select" id="category" name="category">
+                            <option value="">Toutes les catégories</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.name}"
+                                    th:text="${cat.name}"
+                                    th:selected="${param.category != null and param.category[0] == cat.name}">
+                                Catégorie
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="organization" class="form-label">Organisation</label>
+                        <select class="form-select" id="organization" name="organization">
+                            <option value="">Toutes les organisations</option>
+                            <option th:each="org : ${organizations}"
+                                    th:value="${org.id}"
+                                    th:text="${org.name}"
+                                    th:selected="${param.organization != null and param.organization[0] == org.id}">
+                                Organisation
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Statut</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">Tous les statuts</option>
+                            <option value="ACTIVE" th:selected="${param.status != null and param.status[0] == 'ACTIVE'}">
+                                En cours
+                            </option>
+                            <option value="COMPLETED" th:selected="${param.status != null and param.status[0] == 'COMPLETED'}">
+                                Terminé
+                            </option>
+                            <option value="UPCOMING" th:selected="${param.status != null and param.status[0] == 'UPCOMING'}">
+                                À venir
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="minAmount" class="form-label">Montant minimum</label>
+                        <input type="number" class="form-control" id="minAmount" name="minAmount" 
+                               th:value="${param.minAmount != null ? param.minAmount[0] : ''}">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="maxAmount" class="form-label">Montant maximum</label>
+                        <input type="number" class="form-control" id="maxAmount" name="maxAmount" 
+                               th:value="${param.maxAmount != null ? param.maxAmount[0] : ''}">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="sort" class="form-label">Trier par</label>
+                        <select class="form-select" id="sort" name="sort">
+                            <option value="newest" th:selected="${param.sort != null and param.sort[0] == 'newest'}">
+                                Plus récent
+                            </option>
+                            <option value="oldest" th:selected="${param.sort != null and param.sort[0] == 'oldest'}">
+                                Plus ancien
+                            </option>
+                            <option value="amount_asc" th:selected="${param.sort != null and param.sort[0] == 'amount_asc'}">
+                                Montant croissant
+                            </option>
+                            <option value="amount_desc" th:selected="${param.sort != null and param.sort[0] == 'amount_desc'}">
+                                Montant décroissant
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Filtrer</button>
+                        <a th:href="@{/charity-actions}" class="btn btn-outline-secondary">Réinitialiser</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Actions List -->
+        <div class="row">
+            <div class="col-md-4 mb-4" th:each="action : ${charityActions}">
+                <div class="card h-100 shadow-sm">
+                    <img th:src="${action.imageUrl}" class="card-img-top" alt="Action Image" 
+                         style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0" th:text="${action.title}">Titre de l'action</h5>
+                            <span th:class="${'badge bg-' + (action.status == 'ACTIVE' ? 'success' : 
+                                                          action.status == 'UPCOMING' ? 'info' : 'secondary')}"
+                                  th:text="${action.status}">
+                                Statut
+                            </span>
+                        </div>
+                        
+                        <p class="card-text" th:text="${#strings.abbreviate(action.description, 100)}">
+                            Description de l'action
+                        </p>
+                        
+                        <div class="progress mb-3">
+                            <div class="progress-bar" role="progressbar" 
+                                 th:style="'width: ' + ${action.progress} + '%'"
+                                 th:text="${action.progress} + '%'"></div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <small class="text-muted">
+                                Objectif: <span th:text="${action.targetAmount}">0</span>€
+                            </small>
+                            <small class="text-muted">
+                                Collecté: <span th:text="${action.currentAmount}">0</span>€
+                            </small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                <span th:text="${#temporals.format(action.endDate, 'dd/MM/yyyy')}">01/01/2024</span>
+                            </small>
+                            <a th:href="@{/charity-actions/{id}(id=${action.id})}" 
+                               class="btn btn-primary">En savoir plus</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        <nav th:if="${totalPages > 1}" aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/charity-actions(page=${currentPage - 1}, size=${pageSize}, 
+                        category=${param.category}, organization=${param.organization}, status=${param.status}, 
+                        minAmount=${param.minAmount}, maxAmount=${param.maxAmount}, sort=${param.sort})}">
+                        Précédent
+                    </a>
+                </li>
+                
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                    th:classappend="${currentPage == i} ? 'active'">
+                    <a class="page-link" th:href="@{/charity-actions(page=${i}, size=${pageSize}, 
+                        category=${param.category}, organization=${param.organization}, status=${param.status}, 
+                        minAmount=${param.minAmount}, maxAmount=${param.maxAmount}, sort=${param.sort})}"
+                       th:text="${i + 1}">1</a>
+                </li>
+                
+                <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/charity-actions(page=${currentPage + 1}, size=${pageSize}, 
+                        category=${param.category}, organization=${param.organization}, status=${param.status}, 
+                        minAmount=${param.minAmount}, maxAmount=${param.maxAmount}, sort=${param.sort})}">
+                        Suivant
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</body>
+</html> 

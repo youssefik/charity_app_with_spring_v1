@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/organization}">
+<head>
+    <title>Gestion des donations</title>
+    <style>
+        .donation-card {
+            transition: transform 0.2s;
+        }
+        .donation-card:hover {
+            transform: translateY(-5px);
+        }
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.5em 1em;
+        }
+        .stats-card {
+            border-left: 4px solid #007bff;
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+        .btn-group {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="page-title">Gestion des donations</div>
+
+    <div layout:fragment="page-content">
+        <!-- Messages Flash -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total des donations</h5>
+                        <h2 class="text-primary" th:text="${#numbers.formatDecimal(totalAmount, 1, 2)} + ' €'">0.00 €</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Nombre de donations</h5>
+                        <h2 class="text-primary" th:text="${donationCount}">0</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des donations -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Liste des donations</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Donateur</th>
+                                <th>Action</th>
+                                <th>Montant</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="donation : ${donations}" class="donation-card">
+                                <td th:text="${#temporals.format(donation.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
+                                <td th:text="${donation.donorName}">John Doe</td>
+                                <td th:text="${donation.action.title}">Action title</td>
+                                <td th:text="${#numbers.formatDecimal(donation.amount, 1, 2)} + ' €'">100.00 €</td>
+                                <td>
+                                    <span th:class="${'badge ' + 
+                                        (donation.status == 'PENDING' ? 'badge-warning' : 
+                                         donation.status == 'VALIDATED' ? 'badge-success' : 
+                                         'badge-danger')}"
+                                          th:text="${donation.status}">PENDING</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a th:href="@{/organization/dashboard/donations/{id}(id=${donation.id})}" 
+                                           class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <th:block th:if="${donation.status == 'PENDING'}">
+                                            <form th:action="@{/organization/dashboard/donations/{id}/validate(id=${donation.id})}" 
+                                                  method="post" 
+                                                  style="display: inline;">
+                                                <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                            <form th:action="@{/organization/dashboard/donations/{id}/reject(id=${donation.id})}" 
+                                                  method="post" 
+                                                  style="display: inline;">
+                                                <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </form>
+                                        </th:block>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(donations)}">
+                                <td colspan="6" class="text-center">Aucune donation trouvée</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

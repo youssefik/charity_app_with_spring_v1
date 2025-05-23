@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="${action.title}">Détails de l'action</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container py-4">
+            <h1 th:text="${action.title}">Titre de l'action</h1>
+            <p th:text="${action.description}">Description de l'action</p>
+            <div>
+                <strong>Catégorie :</strong>
+                <span th:text="${action.categoryName != null ? action.categoryName : 'Non catégorisé'}"></span>
+            </div>
+            <div>
+                <strong>Organisation :</strong>
+                <span th:text="${action.organizationName != null ? action.organizationName : 'Organisation inconnue'}"></span>
+            </div>
+            <div>
+                <strong>Objectif :</strong>
+                <span th:text="${#numbers.formatDecimal(action.targetAmount, 1, 'POINT', 2, 'COMMA')} + ' €'">Objectif</span>
+            </div>
+            <div>
+                <strong>Collecté :</strong>
+                <span th:text="${#numbers.formatDecimal(action.currentAmount != null ? action.currentAmount : 0, 1, 'POINT', 2, 'COMMA')} + ' €'">Collecté</span>
+            </div>
+            <a th:href="@{/donation/{id}(id=${action.id})}" class="btn btn-success mt-3">
+                <i class="fab fa-paypal"></i> Faire un don
+            </a>
+        </div>
+    </div>
+</body>
+</html> 

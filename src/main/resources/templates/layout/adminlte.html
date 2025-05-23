@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title layout:title-pattern="$CONTENT_TITLE - Admin">Admin - Charity App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link th:href="@{/adminlte/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/adminlte/css/font-awesome.min.css}" rel="stylesheet">
+    <link th:href="@{/adminlte/css/metisMenu.min.css}" rel="stylesheet">
+    <link th:href="@{/adminlte/css/startmin.css}" rel="stylesheet">
+    <link th:href="@{/adminlte/css/timeline.css}" rel="stylesheet">
+    <link th:href="@{/adminlte/css/morris.css}" rel="stylesheet">
+    <link th:href="@{/adminlte/css/select2.min.css}" rel="stylesheet">
+    <link th:href="@{/adminlte/css/dataTables.bootstrap4.min.css}" rel="stylesheet">
+    <link th:href="@{/adminlte/css/sweetalert2.min.css}" rel="stylesheet">
+</head>
+<body>
+<div id="wrapper">
+    <!-- Sidebar -->
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav" id="side-menu">
+                <li class="sidebar-search">
+                    <div class="input-group custom-search-form">
+                        <input type="text" class="form-control" placeholder="Recherche...">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </span>
+                    </div>
+                </li>
+                <li>
+                    <a th:href="@{/admin/dashboard}"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/organizations}"><i class="fa fa-building fa-fw"></i> Organisations</a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/users}"><i class="fa fa-users fa-fw"></i> Utilisateurs</a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/categories}"><i class="fa fa-tags fa-fw"></i> Catégories</a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/actions}"><i class="fa fa-handshake-o fa-fw"></i> Actions</a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/reports}"><i class="fa fa-bar-chart fa-fw"></i> Rapports</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <!-- Page Content -->
+    <div id="page-wrapper">
+        <div layout:fragment="content">
+            <!-- Le contenu spécifique de chaque page admin sera inséré ici -->
+        </div>
+    </div>
+</div>
+<footer class="text-center" style="margin-top: 30px;">
+    <strong>&copy; 2024 Charity App.</strong> Tous droits réservés.
+</footer>
+<script th:src="@{/adminlte/js/jquery.min.js}"></script>
+<script th:src="@{/adminlte/js/bootstrap.min.js}"></script>
+<script th:src="@{/adminlte/js/metisMenu.min.js}"></script>
+<script th:src="@{/adminlte/js/startmin.js}"></script>
+<script th:src="@{/adminlte/js/select2.full.min.js}"></script>
+<script th:src="@{/adminlte/js/jquery.dataTables.min.js}"></script>
+<script th:src="@{/adminlte/js/dataTables.bootstrap4.min.js}"></script>
+<script th:src="@{/adminlte/js/sweetalert2.all.min.js}"></script>
+<th:block layout:fragment="scripts">
+    <!-- Les scripts spécifiques de chaque page admin seront insérés ici -->
+</th:block>
+</body>
+</html> 

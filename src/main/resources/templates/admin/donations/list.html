@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gestion des Dons | Charity App</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+
+        <!-- Right navbar links -->
+        <ul class="navbar-nav ml-auto">
+            <!-- Language Dropdown -->
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="fas fa-globe"></i>
+                    <span th:text="${#locale.language == 'fr' ? 'FR' : 'AR'}">FR</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a href="?lang=fr" class="dropdown-item">Français</a>
+                    <a href="?lang=ar" class="dropdown-item">العربية</a>
+                </div>
+            </li>
+            <!-- User Dropdown Menu -->
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="fas fa-user-circle mr-2"></i>
+                    <span th:text="${#authentication.name}">Admin</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a href="/profile" class="dropdown-item">
+                        <i class="fas fa-user-cog mr-2"></i> Mon Profil
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <form th:action="@{/logout}" method="post" class="dropdown-item">
+                        <button type="submit" class="btn btn-link p-0 m-0" style="text-decoration: none;">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Déconnexion
+                        </button>
+                    </form>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="/admin/dashboard" class="brand-link">
+            <span class="brand-text font-weight-light">Charity App Admin</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                    <li class="nav-item">
+                        <a href="/admin/dashboard" class="nav-link">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>Tableau de Bord</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/organizations" class="nav-link">
+                            <i class="nav-icon fas fa-building"></i>
+                            <p>Organisations</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/users" class="nav-link">
+                            <i class="nav-icon fas fa-users"></i>
+                            <p>Utilisateurs</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/actions" class="nav-link">
+                            <i class="nav-icon fas fa-hands-helping"></i>
+                            <p>Actions de Charité</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/donations" class="nav-link active">
+                            <i class="nav-icon fas fa-hand-holding-heart"></i>
+                            <p>Dons</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/categories" class="nav-link">
+                            <i class="nav-icon fas fa-tags"></i>
+                            <p>Catégories</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/reports" class="nav-link">
+                            <i class="nav-icon fas fa-chart-bar"></i>
+                            <p>Rapports</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Content Header -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Gestion des Dons</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/admin/dashboard">Tableau de bord</a></li>
+                            <li class="breadcrumb-item active">Dons</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="content">
+            <div class="container-fluid">
+                <!-- Messages de notification -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${success}"></span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Liste des Dons</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDonationModal">
+                                <i class="fas fa-plus"></i> Nouveau Don
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table id="donationsTable" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Donateur</th>
+                                    <th>Action</th>
+                                    <th>Montant</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="donation : ${donations}">
+                                    <td th:text="${donation.id}"></td>
+                                    <td th:text="${donation.donorName}"></td>
+                                    <td th:text="${donation.charityAction.title}"></td>
+                                    <td th:text="${#numbers.formatDecimal(donation.amount, 1, 'COMMA', 2, 'POINT') + ' €'}"></td>
+                                    <td th:text="${#temporals.format(donation.donationDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                    <td>
+                                        <span th:if="${donation.status == T(com.example.charity_app_v1.model.DonationStatus).PENDING}" class="badge badge-warning">En attente</span>
+                                        <span th:if="${donation.status == T(com.example.charity_app_v1.model.DonationStatus).COMPLETED}" class="badge badge-success">Complété</span>
+                                        <span th:if="${donation.status == T(com.example.charity_app_v1.model.DonationStatus).CANCELLED}" class="badge badge-danger">Annulé</span>
+                                        <span th:if="${donation.status == T(com.example.charity_app_v1.model.DonationStatus).REFUNDED}" class="badge badge-info">Remboursé</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    th:onclick="'viewDonation(' + ${donation.id} + ')'">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-warning btn-sm" 
+                                                    th:onclick="'updateStatus(' + ${donation.id} + ')'">
+                                                <i class="fas fa-sync-alt"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" 
+                                                    th:onclick="'deleteDonation(' + ${donation.id} + ')'">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de création de don -->
+    <div class="modal fade" id="createDonationModal" tabindex="-1" role="dialog" aria-labelledby="createDonationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createDonationModalLabel">Nouveau Don</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form th:action="@{/admin/donations/create}" method="post">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="donorName">Nom du Donateur</label>
+                                    <input type="text" class="form-control" id="donorName" name="donorName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="charityAction">Action de Charité</label>
+                                    <select class="form-control" id="charityAction" name="charityActionId" required>
+                                        <option value="">Sélectionner une action</option>
+                                        <option th:each="action : ${charityActions}" 
+                                                th:value="${action.id}" 
+                                                th:text="${action.title}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="amount">Montant (€)</label>
+                                    <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="donationDate">Date du Don</label>
+                                    <input type="datetime-local" class="form-control" id="donationDate" name="donationDate" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message (optionnel)</label>
+                            <textarea class="form-control" id="message" name="message" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Créer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- REQUIRED SCRIPTS -->
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script th:inline="javascript">
+    $(function () {
+        // Initialize DataTable
+        $('#donationsTable').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            }
+        });
+    });
+
+    function viewDonation(id) {
+        window.location.href = `/admin/donations/${id}`;
+    }
+
+    function updateStatus(id) {
+        Swal.fire({
+            title: 'Mettre à jour le statut',
+            html: `
+                <select id="status" class="form-control">
+                    <option value="PENDING">En attente</option>
+                    <option value="COMPLETED">Complété</option>
+                    <option value="CANCELLED">Annulé</option>
+                    <option value="REFUNDED">Remboursé</option>
+                </select>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Mettre à jour',
+            cancelButtonText: 'Annuler',
+            preConfirm: () => {
+                return {
+                    status: document.getElementById('status').value
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/donations/${id}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(result.value)
+                }).then(response => {
+                    if (response.ok) {
+                        Swal.fire(
+                            'Mis à jour!',
+                            'Le statut du don a été mis à jour avec succès.',
+                            'success'
+                        ).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire(
+                            'Erreur!',
+                            'Une erreur est survenue lors de la mise à jour.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    }
+
+    function deleteDonation(id) {
+        Swal.fire({
+            title: 'Êtes-vous sûr?',
+            text: "Cette action est irréversible!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Oui, supprimer!',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/donations/${id}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        Swal.fire(
+                            'Supprimé!',
+                            'Le don a été supprimé avec succès.',
+                            'success'
+                        ).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire(
+                            'Erreur!',
+                            'Une erreur est survenue lors de la suppression.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    }
+</script>
+</body>
+</html> 

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Actions caritatives - Organisation</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.7/css/responsive.bootstrap4.min.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+        }
+        .sidebar .nav-link {
+            color: #fff;
+            padding: 1rem;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #495057;
+        }
+        .sidebar .nav-link.active {
+            background-color: #007bff;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .action-card {
+            transition: transform 0.2s;
+        }
+        .action-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="sidebar-sticky">
+                    <div class="text-center py-4">
+                        <h4 class="text-white" th:text="${organization.name}">Nom de l'organisation</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard}">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Tableau de bord
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" th:href="@{/organization/dashboard/actions}">
+                                <i class="fas fa-hands-helping"></i>
+                                Actions caritatives
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/donations}">
+                                <i class="fas fa-hand-holding-usd"></i>
+                                Dons
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/reports}">
+                                <i class="fas fa-chart-bar"></i>
+                                Rapports
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/profile}">
+                                <i class="fas fa-user-cog"></i>
+                                Profil
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Actions caritatives</h1>
+                    <button class="btn btn-primary" data-toggle="modal" data-target="#newActionModal">
+                        <i class="fas fa-plus"></i> Nouvelle action
+                    </button>
+                </div>
+
+                <!-- Filtres -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form th:action="@{/organization/dashboard/actions}" method="get" class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Statut</label>
+                                            <select name="status" class="form-control">
+                                                <option value="">Tous</option>
+                                                <option th:each="status : ${T(com.example.charity_app_v1.model.ActionStatus).values()}"
+                                                        th:value="${status}"
+                                                        th:text="${status}">Statut</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Date de début</label>
+                                            <input type="date" name="startDate" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Date de fin</label>
+                                            <input type="date" name="endDate" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>&nbsp;</label>
+                                            <button type="submit" class="btn btn-primary btn-block">Filtrer</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste des actions -->
+                    <div class="card">
+                            <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="actionsTable" class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Titre</th>
+                                            <th>Description</th>
+                                            <th>Montant cible</th>
+                                            <th>Montant collecté</th>
+                                            <th>Progression</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="action : ${actions}">
+                                            <td th:text="${action.title}">Titre</td>
+                                            <td th:text="${action.description}">Description</td>
+                                            <td th:text="${#numbers.formatDecimal(action.targetAmount, 1, 'COMMA', 2, 'POINT') + ' €'}">0.00 €</td>
+                                            <td th:text="${#numbers.formatDecimal(action.collectedAmount, 1, 'COMMA', 2, 'POINT') + ' €'}">0.00 €</td>
+                                            <td>
+                                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" 
+                                         th:style="'width: ' + ${action.collectedAmount / action.targetAmount * 100} + '%'"
+                                         th:text="${#numbers.formatDecimal(action.collectedAmount / action.targetAmount * 100, 1, 'COMMA', 2, 'POINT') + '%'}">
+                                    </div>
+                                </div>
+                                            </td>
+                                            <td>
+                                    <span class="badge" th:classappend="${action.status == T(com.example.charity_app_v1.model.ActionStatus).ACTIVE ? 'badge-success' : 'badge-secondary'}"
+                                          th:text="${action.status}">Statut</span>
+                                            </td>
+                                            <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                th:onclick="'editAction(' + ${action.id} + ')'">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                th:onclick="'deleteAction(' + ${action.id} + ')'">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Nouvelle Action -->
+    <div class="modal fade" id="newActionModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nouvelle action caritative</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="newActionForm" th:action="@{/organization/dashboard/actions/new}" method="post">
+                        <div class="form-group">
+                            <label>Titre</label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea name="description" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Montant cible</label>
+                            <input type="number" name="targetAmount" class="form-control" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Date de fin</label>
+                            <input type="date" name="endDate" class="form-control" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" form="newActionForm" class="btn btn-primary">Créer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Modal de confirmation de suppression -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmer la suppression</h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir supprimer cette action ?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <form id="deleteForm" method="post">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-danger">Supprimer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <!-- jQuery (NECESSAIRE AVANT DataTables) -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+        <!-- DataTables -->
+        <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap4.min.js"></script>
+
+        <!-- Script d'initialisation -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof jQuery !== 'undefined') {
+                    $('#actionsTable').DataTable({
+                        responsive: true,
+                        language: {
+                            "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                            "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                            "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                            "sInfoFiltered": "(filtré de _MAX_ éléments au total)",
+                            "sLengthMenu": "Afficher _MENU_ éléments",
+                            "sLoadingRecords": "Chargement...",
+                            "sProcessing": "Traitement...",
+                            "sSearch": "Rechercher :",
+                            "sZeroRecords": "Aucun élément correspondant trouvé",
+                            "oPaginate": {
+                                "sFirst": "Premier",
+                                "sLast": "Dernier",
+                                "sNext": "Suivant",
+                                "sPrevious": "Précédent"
+                            },
+                            "oAria": {
+                                "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                                "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                            },
+                            "select": {
+                                "rows": {
+                                    "_": "%d lignes sélectionnées",
+                                    "0": "Aucune ligne sélectionnée",
+                                    "1": "1 ligne sélectionnée"
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    console.error('jQuery is not loaded');
+                }
+            });
+
+            function deleteAction(id) {
+                $('#deleteForm').attr('action', '/organization/dashboard/actions/' + id + '/delete');
+                $('#deleteModal').modal('show');
+        }
+    </script>
+    </th:block>
+</body>
+</html> 
