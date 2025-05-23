@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Charity App</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap4.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background-color: var(--dark-color);
+            padding-top: 1rem;
+        }
+
+        .sidebar .nav-link {
+            color: #fff;
+            padding: 0.8rem 1rem;
+            margin: 0.2rem 0;
+            border-radius: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: var(--primary-color);
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+            padding: 1rem 1.25rem;
+        }
+
+        .btn {
+            border-radius: 0.25rem;
+            padding: 0.375rem 1rem;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 0.5em 0.75em;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 0.5rem;
+            padding: 1rem 1.25rem;
+        }
+
+        .form-control {
+            border-radius: 0.25rem;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .modal-content {
+            border: none;
+            border-radius: 0.5rem;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+            padding: 1rem 1.25rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(0, 0, 0, 0.125);
+            padding: 1rem 1.25rem;
+        }
+
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0.5rem 0.75rem;
+            margin: 0 0.25rem;
+            border-radius: 0.25rem;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #e9ecef;
+            border-color: #dee2e6;
+            color: #212529 !important;
+        }
+        
+        /* Header styles */
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .app-header {
+            box-shadow: 0 2px 4px rgba(0,0,0,.08);
+            background-color: #fff;
+        }
+        
+        /* Donation card styles */
+        .donation-card {
+            transition: transform 0.3s ease;
+        }
+        
+        .donation-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* PayPal button styling */
+        .paypal-button-container {
+            margin: 20px 0;
+            max-width: 300px;
+        }
+    </style>
+    <th:block layout:fragment="styles"></th:block>
+</head>
+<body>
+    <!-- Top navigation bar for all users -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white app-header">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/}">
+                <i class="fas fa-heart text-danger"></i> Charity App
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/actions}">Actions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/organisations}">Organisations</a>
+                    </li>
+                    
+                    <!-- Anonymous user options -->
+                    <li class="nav-item" sec:authorize="isAnonymous()">
+                        <a class="nav-link" th:href="@{/login}">Connexion</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAnonymous()">
+                        <a class="nav-link" th:href="@{/register}">Inscription</a>
+                    </li>
+                    
+                    <!-- Authenticated user dropdown -->
+                    <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i> <span sec:authentication="name">User</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" sec:authorize="hasRole('USER')" th:href="@{/user/dashboard}">Mon tableau de bord</a>
+                            <a class="dropdown-item" sec:authorize="hasRole('ORGANIZATION')" th:href="@{/organization/dashboard}">Tableau de bord</a>
+                            <a class="dropdown-item" th:href="@{/profile}">Mon profil</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" th:href="@{/logout}">Déconnexion</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Organization Sidebar - only show for organization users -->
+            <nav class="col-md-2 d-none d-md-block sidebar" sec:authorize="hasRole('ORGANIZATION')">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard}" 
+                               th:classappend="${#httpServletRequest.requestURI.contains('/organization/dashboard') and !#httpServletRequest.requestURI.contains('/actions') and !#httpServletRequest.requestURI.contains('/donations')} ? 'active' : ''">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Tableau de bord
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/actions}"
+                               th:classappend="${#httpServletRequest.requestURI.contains('/organization/dashboard/actions')} ? 'active' : ''">
+                                <i class="fas fa-hands-helping"></i>
+                                Actions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/donations}"
+                               th:classappend="${#httpServletRequest.requestURI.contains('/organization/donations')} ? 'active' : ''">
+                                <i class="fas fa-donate"></i>
+                                Dons
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/profile}"
+                               th:classappend="${#httpServletRequest.requestURI.contains('/organization/profile')} ? 'active' : ''">
+                                <i class="fas fa-user"></i>
+                                Profil
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/settings}"
+                               th:classappend="${#httpServletRequest.requestURI.contains('/organization/settings')} ? 'active' : ''">
+                                <i class="fas fa-cog"></i>
+                                Paramètres
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            
+            <!-- User Sidebar - only show for regular users -->
+            <nav class="col-md-2 d-none d-md-block sidebar" sec:authorize="hasRole('USER')">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/user/dashboard}"
+                               th:classappend="${#httpServletRequest.requestURI.contains('/user/dashboard') and !#httpServletRequest.requestURI.contains('/donations')} ? 'active' : ''">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Tableau de bord
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/user/donations}"
+                               th:classappend="${#httpServletRequest.requestURI.contains('/user/donations')} ? 'active' : ''">
+                                <i class="fas fa-donate"></i>
+                                Mes dons
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/user/favorites}"
+                               th:classappend="${#httpServletRequest.requestURI.contains('/user/favorites')} ? 'active' : ''">
+                                <i class="fas fa-heart"></i>
+                                Favoris
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/user/profile}"
+                               th:classappend="${#httpServletRequest.requestURI.contains('/user/profile')} ? 'active' : ''">
+                                <i class="fas fa-user"></i>
+                                Profil
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/user/settings}"
+                               th:classappend="${#httpServletRequest.requestURI.contains('/user/settings')} ? 'active' : ''">
+                                <i class="fas fa-cog"></i>
+                                Paramètres
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content - adjusted width based on whether sidebar is shown -->
+            <main role="main" th:class="${#authorization.expression('hasRole(''USER'')') || #authorization.expression('hasRole(''ORGANIZATION'')') ? 'col-md-10 ml-sm-auto px-4 main-content' : 'col-md-12 px-4 main-content'}">
+                <div layout:fragment="content"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- jQuery first -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Then Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <!-- Then Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap4.min.js"></script>
+    
+    <!-- PayPal JS SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=EUR"></script>
+    
+    <!-- Initialize DataTables -->
+    <script>
+        $(document).ready(function() {
+            if ($.fn.DataTable) {
+                $('.datatable').DataTable({
+                    responsive: true,
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json'
+                    }
+                });
+            }
+            
+            // Activate current sidebar link
+            const currentPath = window.location.pathname;
+            $('.sidebar .nav-link').each(function() {
+                const linkPath = $(this).attr('href');
+                if (currentPath.includes(linkPath)) {
+                    $(this).addClass('active');
+                }
+            });
+        });
+        
+        // PayPal button initialization function - will be used in donation pages
+        function initPayPalButton(donationAmount, donationId, successUrl) {
+            if (typeof paypal !== 'undefined') {
+                paypal.Buttons({
+                    style: {
+                        shape: 'rect',
+                        color: 'blue',
+                        layout: 'vertical',
+                        label: 'pay'
+                    },
+                    createOrder: function(data, actions) {
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    value: donationAmount
+                                },
+                                description: 'Donation #' + donationId
+                            }]
+                        });
+                    },
+                    onApprove: function(data, actions) {
+                        return actions.order.capture().then(function(details) {
+                            // Send the payment details to your server
+                            fetch('/api/donations/process-payment', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    orderId: data.orderID,
+                                    donationId: donationId,
+                                    paymentDetails: details
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    window.location.href = successUrl || '/user/donations?success=true';
+                                } else {
+                                    alert('Erreur lors du traitement du paiement: ' + data.message);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Une erreur est survenue lors du traitement de votre don.');
+                            });
+                        });
+                    },
+                    onError: function(err) {
+                        console.error('Error:', err);
+                        alert('Une erreur est survenue lors du processus de paiement PayPal.');
+                    }
+                }).render('.paypal-button-container');
+            }
+        }
+    </script>
+    
+    <th:block layout:fragment="scripts"></th:block>
+</body>
+</html> 

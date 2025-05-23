@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="${action.title + ' - Charity App'}">Détail de l'action - Charity App</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Action Header -->
+                <div class="card shadow-sm mb-4">
+                    <img th:src="${action.imageUrl}" class="card-img-top" alt="Action Image" 
+                         style="height: 400px; object-fit: cover;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h1 class="card-title" th:text="${action.title}">Titre de l'action</h1>
+                            <span th:class="${'badge bg-' + (action.status == 'ACTIVE' ? 'success' : 
+                                                          action.status == 'UPCOMING' ? 'info' : 'secondary')}"
+                                  th:text="${action.status}">
+                                Statut
+                            </span>
+                        </div>
+                        
+                        <div class="progress mb-3" style="height: 25px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 th:style="'width: ' + ${action.progress} + '%'"
+                                 th:text="${action.progress} + '%'"></div>
+                        </div>
+                        
+                        <div class="row text-center mb-4">
+                            <div class="col">
+                                <h5>Objectif</h5>
+                                <p class="h3" th:text="${action.targetAmount + '€'}">0€</p>
+                            </div>
+                            <div class="col">
+                                <h5>Collecté</h5>
+                                <p class="h3" th:text="${action.currentAmount + '€'}">0€</p>
+                            </div>
+                            <div class="col">
+                                <h5>Donateurs</h5>
+                                <p class="h3" th:text="${action.donorCount}">0</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>Description</h5>
+                            <p class="card-text" th:text="${action.description}">Description de l'action</p>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5>Détails</h5>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                        Date de début: 
+                                        <span th:text="${#temporals.format(action.startDate, 'dd/MM/yyyy')}">
+                                            01/01/2024
+                                        </span>
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-calendar-check text-primary me-2"></i>
+                                        Date de fin: 
+                                        <span th:text="${#temporals.format(action.endDate, 'dd/MM/yyyy')}">
+                                            01/01/2024
+                                        </span>
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-tag text-primary me-2"></i>
+                                        Catégorie: 
+                                        <span th:text="${action.category.name}">Catégorie</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Organisation</h5>
+                                <div class="d-flex align-items-center">
+                                    <img th:src="${action.organization.logoUrl}" 
+                                         class="rounded-circle me-3" style="width: 50px; height: 50px;">
+                                    <div>
+                                        <h6 class="mb-0" th:text="${action.organization.name}">
+                                            Nom de l'organisation
+                                        </h6>
+                                        <small class="text-muted" th:text="${action.organization.description}">
+                                            Description
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Updates Section -->
+                        <div class="mb-4">
+                            <h5>Actualités</h5>
+                            <div class="timeline">
+                                <div class="timeline-item" th:each="update : ${action.updates}">
+                                    <div class="timeline-date" 
+                                         th:text="${#temporals.format(update.date, 'dd/MM/yyyy')}">
+                                        01/01/2024
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6 th:text="${update.title}">Titre de l'actualité</h6>
+                                        <p th:text="${update.content}">Contenu de l'actualité</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Donation Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Faire un don</h5>
+                        
+                        <form th:action="@{/charity-actions/{id}/donate(id=${action.id})}" method="post" 
+                              th:object="${donationDTO}" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">Montant (€)</label>
+                                <input type="number" class="form-control" id="amount" 
+                                       th:field="*{amount}" min="1" step="0.01" required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('amount')}" 
+                                     th:errors="*{amount}">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="paymentMethod" class="form-label">Méthode de paiement</label>
+                                <select class="form-select" id="paymentMethod" 
+                                        th:field="*{paymentMethod}" required>
+                                    <option value="CREDIT_CARD">Carte de crédit</option>
+                                    <option value="PAYPAL">PayPal</option>
+                                    <option value="BANK_TRANSFER">Virement bancaire</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Message (optionnel)</label>
+                                <textarea class="form-control" id="message" th:field="*{message}" 
+                                          rows="3"></textarea>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="anonymous" 
+                                       th:field="*{anonymous}">
+                                <label class="form-check-label" for="anonymous">
+                                    Faire un don anonyme
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    Faire un don
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Share Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Partager</h5>
+                        <div class="d-flex justify-content-around">
+                            <a href="#" class="btn btn-outline-primary">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="btn btn-outline-info">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="btn btn-outline-success">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <a href="#" class="btn btn-outline-secondary">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Similar Actions -->
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Actions similaires</h5>
+                        <div class="list-group list-group-flush">
+                            <a th:each="similarAction : ${similarActions}"
+                               th:href="@{/charity-actions/{id}(id=${similarAction.id})}"
+                               class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1" th:text="${similarAction.title}">Titre</h6>
+                                    <small th:text="${similarAction.progress + '%'}">0%</small>
+                                </div>
+                                <p class="mb-1" th:text="${#strings.abbreviate(similarAction.description, 50)}">
+                                    Description
+                                </p>
+                                <small class="text-muted">
+                                    <span th:text="${similarAction.currentAmount + '€'}">0€</span> collectés
+                                </small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Validation Script -->
+    <script th:inline="javascript">
+        (function () {
+            'use strict'
+            
+            var forms = document.querySelectorAll('.needs-validation')
+            
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+    </script>
+</body>
+</html> 

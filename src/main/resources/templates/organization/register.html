@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Inscription Organisation</title>
+    <style>
+        .form-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .form-section-title {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .required-field::after {
+            content: " *";
+            color: #e74c3c;
+        }
+        
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
+            padding: 10px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+            transform: translateY(-1px);
+        }
+        
+        .alert {
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 15px;
+        }
+        
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+        
+        .card-body {
+            padding: 30px;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .invalid-feedback {
+            font-size: 0.875rem;
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container mt-5 mb-5">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0 text-center">Inscription de votre Organisation</h3>
+                        </div>
+                        <div class="card-body">
+                            <!-- Messages d'erreur -->
+                            <div th:if="${error}" class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <span th:text="${error}"></span>
+                            </div>
+
+                            <!-- Messages de succès -->
+                            <div th:if="${success}" class="alert alert-success" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <span th:text="${success}"></span>
+                            </div>
+
+                            <form th:action="@{/organization/register}" method="post" th:object="${organization}" class="needs-validation" novalidate>
+                                <!-- Token CSRF -->
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                
+                                <!-- Informations de base -->
+                                <div class="form-section">
+                                    <h4 class="form-section-title">Informations de base</h4>
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label required-field">Nom de l'organisation</label>
+                                        <input type="text" class="form-control" id="name" name="name" th:field="*{name}" required>
+                                        <div class="invalid-feedback">Le nom de l'organisation est requis</div>
+                                    </div>
+                                </div>
+
+                                <!-- Informations légales -->
+                                <div class="form-section">
+                                    <h4 class="form-section-title">Informations légales</h4>
+                                    <div class="mb-3">
+                                        <label for="legalAddress" class="form-label required-field">Adresse légale</label>
+                                        <input type="text" class="form-control" id="legalAddress" name="legalAddress" th:field="*{legalAddress}" required>
+                                        <div class="invalid-feedback">L'adresse légale est requise</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="registrationNumber" class="form-label required-field">Numéro d'enregistrement</label>
+                                        <input type="text" class="form-control" id="registrationNumber" name="registrationNumber" th:field="*{registrationNumber}" required>
+                                        <div class="invalid-feedback">Le numéro d'enregistrement est requis</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="taxId" class="form-label required-field">Numéro d'identification fiscale</label>
+                                        <input type="text" class="form-control" id="taxId" name="taxId" th:field="*{taxId}" 
+                                               pattern="[0-9]{14}" required>
+                                        <div class="invalid-feedback">Le numéro d'identification fiscale doit contenir 14 chiffres</div>
+                                    </div>
+                                </div>
+
+                                <!-- Coordonnées -->
+                                <div class="form-section">
+                                    <h4 class="form-section-title">Coordonnées</h4>
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label required-field">Email de contact</label>
+                                        <input type="email" class="form-control" id="email" name="email" th:field="*{email}" required>
+                                        <div class="invalid-feedback">Un email valide est requis</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="contactPhone" class="form-label required-field">Téléphone de contact</label>
+                                        <input type="tel" class="form-control" id="contactPhone" name="contactPhone" th:field="*{contactPhone}" 
+                                               pattern="[0-9]{10}" required>
+                                        <div class="invalid-feedback">Le numéro de téléphone doit contenir 10 chiffres</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="website" class="form-label">Site web</label>
+                                        <input type="url" class="form-control" id="website" name="website" th:field="*{website}">
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="form-section">
+                                    <h4 class="form-section-title">Description</h4>
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label required-field">Description de l'organisation</label>
+                                        <textarea class="form-control" id="description" name="description" th:field="*{description}" rows="4" required></textarea>
+                                        <div class="invalid-feedback">La description est requise</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="mission" class="form-label required-field">Mission de l'organisation</label>
+                                        <textarea class="form-control" id="mission" name="mission" th:field="*{mission}" rows="4" required></textarea>
+                                        <div class="invalid-feedback">La mission est requise</div>
+                                    </div>
+                                </div>
+
+                                <!-- Logo -->
+                                <div class="form-section">
+                                    <h4 class="form-section-title">Logo</h4>
+                                    <div class="mb-3">
+                                        <label for="logo" class="form-label">Logo de l'organisation</label>
+                                        <input type="text" class="form-control" id="logo" name="logo" th:field="*{logo}" 
+                                               placeholder="URL de l'image">
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                        <i class="fas fa-save me-2"></i>Enregistrer l'organisation
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Script pour la validation du formulaire -->
+        <script th:inline="javascript">
+            (function () {
+                'use strict'
+                
+                // Fonction pour valider un champ spécifique
+                function validateField(field) {
+                    console.log('Validating field:', field.id, 'Value:', field.value);
+                    
+                    let isValid = true;
+                    let errorMessage = '';
+
+                    // Vérification du champ requis
+                    if (field.required && !field.value.trim()) {
+                        isValid = false;
+                        errorMessage = 'Ce champ est requis';
+                    }
+                    // Vérification du pattern pour le téléphone
+                    else if (field.id === 'contactPhone' && field.value) {
+                        const phonePattern = /^[0-9]{10}$/;
+                        if (!phonePattern.test(field.value)) {
+                            isValid = false;
+                            errorMessage = 'Le numéro de téléphone doit contenir exactement 10 chiffres';
+                        }
+                    }
+                    // Vérification du pattern pour le numéro fiscal
+                    else if (field.id === 'taxId' && field.value) {
+                        const taxPattern = /^[0-9]{14}$/;
+                        if (!taxPattern.test(field.value)) {
+                            isValid = false;
+                            errorMessage = 'Le numéro d\'identification fiscale doit contenir exactement 14 chiffres';
+                        }
+                    }
+                    // Vérification de l'email
+                    else if (field.type === 'email' && field.value) {
+                        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailPattern.test(field.value)) {
+                            isValid = false;
+                            errorMessage = 'Veuillez entrer une adresse email valide';
+                        }
+                    }
+                    // Vérification de l'URL pour le site web
+                    else if (field.type === 'url' && field.value) {
+                        try {
+                            new URL(field.value);
+                        } catch (e) {
+                            isValid = false;
+                            errorMessage = 'Veuillez entrer une URL valide';
+                        }
+                    }
+
+                    // Mise à jour de l'interface
+                    if (!isValid) {
+                        field.classList.add('is-invalid');
+                        field.classList.remove('is-valid');
+                        const feedback = field.nextElementSibling;
+                        if (feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.textContent = errorMessage;
+                        }
+                        console.log('Field invalid:', field.id, 'Error:', errorMessage);
+                    } else {
+                        field.classList.remove('is-invalid');
+                        field.classList.add('is-valid');
+                        console.log('Field valid:', field.id);
+                    }
+
+                    return isValid;
+                }
+
+                // Fonction pour valider tous les champs
+                function validateForm(form) {
+                    console.log('Starting form validation...');
+                    let isValid = true;
+                    const requiredFields = form.querySelectorAll('[required]');
+                    
+                    requiredFields.forEach(field => {
+                        if (!validateField(field)) {
+                            isValid = false;
+                        }
+                    });
+
+                    console.log('Form validation result:', isValid);
+                    return isValid;
+                }
+
+                // Ajouter les écouteurs d'événements pour la validation en temps réel
+                const forms = document.querySelectorAll('.needs-validation');
+                forms.forEach(form => {
+                    const fields = form.querySelectorAll('input, textarea');
+                    fields.forEach(field => {
+                        // Validation lors de la saisie
+                        field.addEventListener('input', () => {
+                            console.log('Input event on field:', field.id);
+                            validateField(field);
+                        });
+
+                        // Validation lors de la perte du focus
+                        field.addEventListener('blur', () => {
+                            console.log('Blur event on field:', field.id);
+                            validateField(field);
+                        });
+                    });
+
+                    form.addEventListener('submit', function (event) {
+                        console.log('Form submission attempted');
+                        
+                        if (!validateForm(form)) {
+                            console.log('Form validation failed');
+                            event.preventDefault();
+                            event.stopPropagation();
+                            
+                            // Faire défiler jusqu'au premier champ invalide
+                            const firstInvalid = form.querySelector('.is-invalid');
+                            if (firstInvalid) {
+                                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                firstInvalid.focus();
+                            }
+                        } else {
+                            console.log('Form validation passed');
+                        }
+                        
+                        form.classList.add('was-validated');
+                    });
+                });
+
+                // Ajouter un écouteur d'événement sur le bouton de soumission
+                document.getElementById('submitBtn').addEventListener('click', function(event) {
+                    console.log('Submit button clicked');
+                    const form = this.closest('form');
+                    console.log('Form action:', form.action);
+                    console.log('Form method:', form.method);
+                    console.log('CSRF token:', document.querySelector('input[name="' + /*[[${_csrf.parameterName}]]*/ '_csrf' + '"]').value);
+                });
+            })();
+        </script>
+    </div>
+</body>
+</html> 

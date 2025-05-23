@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Mon Profil - Charity App</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body text-center">
+                        <img th:src="${user.profileImageUrl ?: '/images/default-avatar.png'}" 
+                             class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                        <h4 th:text="${user.firstName + ' ' + user.lastName}">Nom Utilisateur</h4>
+                        <p class="text-muted" th:text="${user.email}">email@example.com</p>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                Modifier le profil
+                            </button>
+                            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                Changer le mot de passe
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Statistiques</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-hand-holding-heart text-primary me-2"></i>
+                                Dons effectués: <span th:text="${userStats.totalDonations}">0</span>
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-euro-sign text-primary me-2"></i>
+                                Montant total: <span th:text="${userStats.totalAmount}">0€</span>
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-calendar-check text-primary me-2"></i>
+                                Membre depuis: <span th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy')}">01/01/2024</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <!-- Recent Donations -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Dons récents</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Action</th>
+                                        <th>Montant</th>
+                                        <th>Date</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="donation : ${recentDonations}">
+                                        <td>
+                                            <a th:href="@{/charity-actions/{id}(id=${donation.charityActionId})}" 
+                                               th:text="${donation.charityActionTitle}">
+                                                Titre de l'action
+                                            </a>
+                                        </td>
+                                        <td th:text="${donation.amount + '€'}">0€</td>
+                                        <td th:text="${#temporals.format(donation.donationDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                                        <td>
+                                            <span th:class="${'badge bg-' + (donation.status == 'COMPLETED' ? 'success' : 'warning')}"
+                                                  th:text="${donation.status}">
+                                                Statut
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Favorite Categories -->
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Catégories préférées</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3" th:each="category : ${favoriteCategories}">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i th:class="${category.icon + ' fa-2x text-primary mb-3'}"></i>
+                                        <h6 th:text="${category.name}">Catégorie</h6>
+                                        <p class="text-muted small" th:text="${category.description}">Description</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Edit Profile Modal -->
+        <div class="modal fade" id="editProfileModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modifier le profil</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form th:action="@{/profile/update}" th:object="${userDTO}" method="post" 
+                              enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="profileImage" class="form-label">Photo de profil</label>
+                                <input type="file" class="form-control" id="profileImage" name="profileImage" 
+                                       accept="image/*">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="firstName" class="form-label">Prénom</label>
+                                    <input type="text" class="form-control" id="firstName" 
+                                           th:field="*{firstName}" required>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="lastName" class="form-label">Nom</label>
+                                    <input type="text" class="form-control" id="lastName" 
+                                           th:field="*{lastName}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="phone" 
+                                       th:field="*{phone}">
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Change Password Modal -->
+        <div class="modal fade" id="changePasswordModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Changer le mot de passe</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form th:action="@{/profile/change-password}" method="post">
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Mot de passe actuel</label>
+                                <input type="password" class="form-control" id="currentPassword" 
+                                       name="currentPassword" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">Nouveau mot de passe</label>
+                                <input type="password" class="form-control" id="newPassword" 
+                                       name="newPassword" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirmer le nouveau mot de passe</label>
+                                <input type="password" class="form-control" id="confirmPassword" 
+                                       name="confirmPassword" required>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Changer le mot de passe</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

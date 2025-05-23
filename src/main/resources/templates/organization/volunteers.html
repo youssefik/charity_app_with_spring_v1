@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Bénévoles - Organisation</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap4.min.css">
+    <style>
+        .volunteer-card {
+            transition: transform 0.2s;
+            margin-bottom: 20px;
+        }
+        .volunteer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .volunteer-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+        .volunteer-info {
+            text-align: center;
+        }
+        .volunteer-stats {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            color: #6c757d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- Content Header -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Bénévoles</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/organization/dashboard}">Tableau de bord</a></li>
+                            <li class="breadcrumb-item active">Bénévoles</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="content">
+            <div class="container-fluid">
+                <!-- Alert Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${success}"></span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- Volunteers Overview -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Vue d'ensemble des bénévoles</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="volunteer-stats">
+                                            <div class="stat-item">
+                                                <div class="stat-value" th:text="${stats.totalVolunteers}">0</div>
+                                                <div class="stat-label">Total des bénévoles</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="volunteer-stats">
+                                            <div class="stat-item">
+                                                <div class="stat-value" th:text="${stats.activeVolunteers}">0</div>
+                                                <div class="stat-label">Bénévoles actifs</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="volunteer-stats">
+                                            <div class="stat-item">
+                                                <div class="stat-value" th:text="${stats.totalHours}">0</div>
+                                                <div class="stat-label">Heures de bénévolat</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Volunteers List -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Liste des bénévoles</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped" id="volunteersTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Photo</th>
+                                                <th>Nom</th>
+                                                <th>Email</th>
+                                                <th>Actions</th>
+                                                <th>Heures</th>
+                                                <th>Statut</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="volunteer : ${volunteers}">
+                                                <td>
+                                                    <img th:if="${volunteer.avatarUrl}" 
+                                                         th:src="${volunteer.avatarUrl}" 
+                                                         class="volunteer-avatar" 
+                                                         alt="Photo de profil">
+                                                    <img th:unless="${volunteer.avatarUrl}" 
+                                                         src="/images/default-avatar.png" 
+                                                         class="volunteer-avatar" 
+                                                         alt="Photo de profil par défaut">
+                                                </td>
+                                                <td th:text="${volunteer.name}">Nom du bénévole</td>
+                                                <td th:text="${volunteer.email}">email@example.com</td>
+                                                <td th:text="${volunteer.actionCount}">0</td>
+                                                <td th:text="${volunteer.totalHours}">0</td>
+                                                <td>
+                                                    <span th:class="${'badge badge-' + volunteer.statusColor}" 
+                                                          th:text="${volunteer.status}">
+                                                        Statut
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a th:href="@{/organization/volunteers/{id}(id=${volunteer.id})}" 
+                                                       class="btn btn-info btn-sm">
+                                                        <i class="fas fa-eye"></i> Voir
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <th:block layout:fragment="scripts">
+        <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap4.min.js"></script>
+        
+        <script th:inline="javascript">
+            $(document).ready(function() {
+                $('#volunteersTable').DataTable({
+                    responsive: true,
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json'
+                    }
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html> 

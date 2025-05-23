@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Dons</title>
+</head>
+<body>
+<th:block th:fragment="content">
+    <div class="d-flex justify-content-between mb-4">
+        <h2>Historique des dons</h2>
+        <a sec:authorize="hasRole('USER')" th:href="@{/donations/new}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouveau don
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead class="table-dark">
+            <tr>
+                <th>Montant</th>
+                <th>Date</th>
+                <th>Méthode</th>
+                <th>Action</th>
+                <th sec:authorize="hasRole('ADMIN')">Donateur</th>
+                <th sec:authorize="hasRole('ADMIN')">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="donation : ${donations}">
+                <td th:text="${'$' + #numbers.formatDecimal(donation.montant, 1, 2, 'POINT')}"></td>
+                <td th:text="${#temporals.format(donation.date, 'dd/MM/yyyy')}"></td>
+                <td th:text="${donation.methodePaiement}"></td>
+                <td>
+                    <span th:text="${donation.charityAction.titre}"></span>
+                </td>
+                <td sec:authorize="hasRole('ADMIN')" th:text="${donation.user.nom}"></td>
+                <td sec:authorize="hasRole('ADMIN')">
+                    <form th:action="@{/donations/delete/{id}(id=${donation.id})}" method="post">
+                        <button type="submit" class="btn btn-sm btn-danger"
+                                onclick="return confirm('Supprimer ce don?')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</th:block>
+</body>
+</html>

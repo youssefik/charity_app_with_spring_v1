@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE - Organisation">Organisation</title>
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+        }
+        .sidebar .nav-link {
+            color: #fff;
+            padding: 1rem;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #495057;
+        }
+        .sidebar .nav-link.active {
+            background-color: #007bff;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+        .btn-group {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Sidebar -->
+                <nav class="col-md-2 d-none d-md-block sidebar">
+                    <div class="sidebar-sticky">
+                        <div class="text-center py-4">
+                            <h4 class="text-white" th:text="${organization.name}">Nom de l'organisation</h4>
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/organization/dashboard}" th:classappend="${#httpServletRequest.requestURI == '/organization/dashboard' ? 'active' : ''}">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    Tableau de bord
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/organization/dashboard/actions}" th:classappend="${#httpServletRequest.requestURI == '/organization/dashboard/actions' ? 'active' : ''}">
+                                    <i class="fas fa-hands-helping"></i>
+                                    Actions caritatives
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/organization/dashboard/donations}" th:classappend="${#httpServletRequest.requestURI == '/organization/dashboard/donations' ? 'active' : ''}">
+                                    <i class="fas fa-hand-holding-usd"></i>
+                                    Dons
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/organization/dashboard/reports}" th:classappend="${#httpServletRequest.requestURI == '/organization/dashboard/reports' ? 'active' : ''}">
+                                    <i class="fas fa-chart-bar"></i>
+                                    Rapports
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/organization/dashboard/profile}" th:classappend="${#httpServletRequest.requestURI == '/organization/dashboard/profile' ? 'active' : ''}">
+                                    <i class="fas fa-user-cog"></i>
+                                    Profil
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <!-- Main Content -->
+                <main class="col-md-10 ms-sm-auto px-md-4">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2" layout:fragment="page-title">Titre de la page</h1>
+                        <div class="btn-group" layout:fragment="page-actions">
+                            <!-- Les boutons d'action spécifiques à chaque page seront insérés ici -->
+                        </div>
+                    </div>
+
+                    <!-- Contenu spécifique à chaque page -->
+                    <div layout:fragment="page-content">
+                        <!-- Le contenu spécifique à chaque page sera inséré ici -->
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts communs -->
+    <th:block layout:fragment="scripts">
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+    </th:block>
+</body>
+</html> 

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>En attente d'approbation</title>
+    <style>
+        .pending-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .status-icon {
+            font-size: 64px;
+            color: #f39c12;
+            margin-bottom: 20px;
+        }
+        
+        .status-title {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .status-message {
+            color: #7f8c8d;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .organization-details {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .organization-details h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .detail-item {
+            margin-bottom: 10px;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #34495e;
+        }
+        
+        .detail-value {
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="pending-container text-center">
+                <i class="fas fa-clock status-icon"></i>
+                <h2 class="status-title">En attente d'approbation</h2>
+                <p class="status-message">
+                    Votre organisation a été créée avec succès et est actuellement en attente d'approbation par nos administrateurs.
+                    Vous recevrez un email une fois que votre organisation sera approuvée.
+                </p>
+                
+                <div class="organization-details">
+                    <h4>Détails de votre organisation</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <span class="detail-label">Nom :</span>
+                                <span class="detail-value" th:text="${organization.name}"></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Email :</span>
+                                <span class="detail-value" th:text="${organization.contactEmail}"></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Téléphone :</span>
+                                <span class="detail-value" th:text="${organization.contactPhone}"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <span class="detail-label">Adresse :</span>
+                                <span class="detail-value" th:text="${organization.legalAddress}"></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Numéro fiscal :</span>
+                                <span class="detail-value" th:text="${organization.taxIdentificationNumber}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <a th:href="@{/}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>Retour à l'accueil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

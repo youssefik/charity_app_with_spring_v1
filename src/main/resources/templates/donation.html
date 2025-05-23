@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Faire un don</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">Faire un don à <span th:text="${organization.name}">Organisation</span></h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <img th:if="${organization.logoUrl}" th:src="${organization.logoUrl}" alt="Logo" class="img-fluid mb-3" style="max-height: 120px;">
+                                        <h5 th:text="${action.title}" class="font-weight-bold">Titre de l'action</h5>
+                                        <p th:text="${action.description}" class="text-muted">Description de l'action...</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h6 class="font-weight-bold">Objectif</h6>
+                                                <div class="progress mb-3">
+                                                    <div class="progress-bar" role="progressbar" 
+                                                         th:style="'width: ' + ${(action.raisedAmount / action.goalAmount) * 100} + '%'" 
+                                                         th:attr="aria-valuenow=${(action.raisedAmount / action.goalAmount) * 100}"
+                                                         aria-valuemin="0" aria-valuemax="100">
+                                                        <span th:text="${#numbers.formatDecimal((action.raisedAmount / action.goalAmount) * 100, 0, 0)} + '%'">45%</span>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span th:text="${#numbers.formatDecimal(action.raisedAmount, 0, 'COMMA', 2, 'POINT')} + ' €'">1,234.00 €</span>
+                                                    <span class="text-muted">sur</span>
+                                                    <span th:text="${#numbers.formatDecimal(action.goalAmount, 0, 'COMMA', 2, 'POINT')} + ' €'">5,000.00 €</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <form id="donationForm" th:action="@{/api/donations/prepare}" method="post" th:object="${donationRequest}">
+                                <input type="hidden" th:field="*{actionId}">
+                                <input type="hidden" th:field="*{organizationId}">
+                                
+                                <div class="form-group">
+                                    <label for="amount">Montant du don</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">€</span>
+                                        </div>
+                                        <input type="number" class="form-control" id="amount" th:field="*{amount}" min="1" step="1" required>
+                                    </div>
+                                    <small class="form-text text-muted">Choisissez le montant que vous souhaitez donner</small>
+                                </div>
+                                
+                                <div class="donation-amount-buttons mb-4">
+                                    <button type="button" class="btn btn-outline-primary mr-2 donation-btn" data-amount="5">5 €</button>
+                                    <button type="button" class="btn btn-outline-primary mr-2 donation-btn" data-amount="10">10 €</button>
+                                    <button type="button" class="btn btn-outline-primary mr-2 donation-btn" data-amount="20">20 €</button>
+                                    <button type="button" class="btn btn-outline-primary mr-2 donation-btn" data-amount="50">50 €</button>
+                                    <button type="button" class="btn btn-outline-primary donation-btn" data-amount="100">100 €</button>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="message">Message (optionnel)</label>
+                                    <textarea class="form-control" id="message" th:field="*{message}" rows="3"></textarea>
+                                    <small class="form-text text-muted">Laissez un message à l'organisation (sera visible publiquement)</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="anonymous" th:field="*{anonymous}">
+                                        <label class="custom-control-label" for="anonymous">Faire un don anonyme</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="receiptRequested" th:field="*{receiptRequested}">
+                                        <label class="custom-control-label" for="receiptRequested">Je souhaite recevoir un reçu pour mon don</label>
+                                    </div>
+                                </div>
+                                
+                                <hr class="my-4">
+                                
+                                <h5 class="mb-3">Choisissez votre méthode de paiement</h5>
+                                
+                                <!-- PayPal button container -->
+                                <div class="paypal-button-container" id="paypal-button-container"></div>
+                                
+                                <div class="text-center mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg d-none" id="submit-btn">Continuer</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-footer">
+                            <div class="text-muted small">
+                                <p class="mb-1">
+                                    <i class="fas fa-lock"></i> Paiement sécurisé via PayPal
+                                </p>
+                                <p class="mb-0">
+                                    <i class="fas fa-info-circle"></i> Votre don aidera directement l'action "<span th:text="${action.title}">Titre de l'action</span>" 
+                                    de <span th:text="${organization.name}">Organisation</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="scripts">
+        <script>
+            $(document).ready(function() {
+                // Donation amount buttons
+                $('.donation-btn').click(function() {
+                    const amount = $(this).data('amount');
+                    $('#amount').val(amount);
+                    $('.donation-btn').removeClass('active btn-primary').addClass('btn-outline-primary');
+                    $(this).removeClass('btn-outline-primary').addClass('btn-primary active');
+                });
+                
+                // Get donation details for PayPal
+                const donationAmount = $('#amount').val() || 10;
+                const actionId = $('input[name="actionId"]').val();
+                
+                // Initialize PayPal button once the page loads
+                initPayPalButton(donationAmount, actionId, '/user/donations?success=true');
+                
+                // Update PayPal button when amount changes
+                $('#amount').on('change', function() {
+                    const newAmount = $(this).val();
+                    // Remove the old PayPal button
+                    $('#paypal-button-container').empty();
+                    // Initialize a new PayPal button with the updated amount
+                    initPayPalButton(newAmount, actionId, '/user/donations?success=true');
+                });
+                
+                // Form validation
+                $('#donationForm').on('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const amount = $('#amount').val();
+                    if (!amount || amount <= 0) {
+                        alert('Veuillez saisir un montant valide.');
+                        return false;
+                    }
+                    
+                    // If validation passes, normally we would submit the form
+                    // But here we're using PayPal directly
+                    // You can implement additional backend validation if needed
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html> 
