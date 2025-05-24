@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title != null ? title : 'Actions Caritatives'}">Actions Caritatives</title>
+    <style>
+        .action-card {
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .action-card:hover {
+            transform: translateY(-5px);
+        }
+        .progress {
+            height: 10px;
+        }
+        .category-badge {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/images/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 50px 0;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <section class="hero-section text-center">
+            <div class="container">
+                <h1 class="display-4 mb-4" th:text="${title != null ? title : 'Actions Caritatives'}">Actions Caritatives</h1>
+                <p class="lead mb-4">Découvrez et soutenez des causes qui vous tiennent à cœur</p>
+            </div>
+        </section>
+
+        <div class="container">
+            <!-- Filtres -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="btn-group">
+                        <a th:href="@{/actions}" class="btn btn-outline-primary" th:classappend="${selectedCategoryId == null} ? 'active' : ''">
+                            Toutes
+                        </a>
+                        <a th:each="cat : ${categories}"
+                           th:href="@{/actions(categoryId=${cat.id})}"
+                           class="btn btn-outline-primary"
+                           th:classappend="${selectedCategoryId == cat.id} ? 'active' : ''"
+                           th:text="${cat.name}">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 text-right">
+                    <a th:href="@{/actions/popular}" class="btn btn-outline-success mr-2">
+                        <i class="fas fa-fire"></i> Populaires
+                    </a>
+                    <a th:href="@{/actions/recommended}" class="btn btn-outline-info">
+                        <i class="fas fa-star"></i> Recommandées
+                    </a>
+                </div>
+            </div>
+
+            <!-- Message d'erreur -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${error}"></span>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <!-- Liste des actions -->
+            <div class="row">
+                <div th:each="action : ${actions}" class="col-md-4 mb-4">
+                    <div class="card action-card h-100">
+                        <img th:if="${action.imageUrl != null}" th:src="${action.imageUrl}" class="card-img-top" alt="Image de l'action">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${action.title}">Titre</h5>
+                            <p class="card-text" th:text="${action.description}">Description</p>
+                            
+                            <!-- Barre de progression -->
+                            <div class="progress mb-3" th:if="${action.targetAmount != null && action.targetAmount > 0}">
+                                <div class="progress-bar" role="progressbar"
+                                     th:style="'width: ' + ${(action.currentAmount != null ? action.currentAmount : 0) / action.targetAmount * 100} + '%'"
+                                     th:text="${#numbers.formatDecimal((action.currentAmount != null ? action.currentAmount : 0) / action.targetAmount * 100, 1, 1)} + '%'">
+                                </div>
+                            </div>
+                            
+                            <!-- Montants -->
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Objectif: <span th:text="${action.targetAmount != null ? #numbers.formatDecimal(action.targetAmount, 1, 'POINT', 2, 'COMMA') + ' €' : 'Non défini'}"></span><br>
+                                    Collecté: <span th:text="${action.currentAmount != null ? #numbers.formatDecimal(action.currentAmount, 1, 'POINT', 2, 'COMMA') + ' €' : '0 €'}"></span>
+                                </small>
+                            </p>
+                            
+                            <!-- Boutons d'action -->
+                            <div class="d-flex justify-content-between">
+                                <a th:href="@{/actions/{id}(id=${action.id})}" class="btn btn-primary">
+                                    <i class="fas fa-info-circle"></i> Détails
+                                </a>
+                                <a th:href="@{/donation/{id}(id=${action.id})}" class="btn btn-success">
+                                    <i class="fab fa-paypal"></i> Faire un don
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white">
+                            <small class="text-muted">
+                                <i class="fas fa-tag"></i> <span th:text="${action.categoryName != null ? action.categoryName : 'Non catégorisé'}"></span><br>
+                                <i class="fas fa-building"></i> <span th:text="${action.organizationName != null ? action.organizationName : 'Organisation inconnue'}"></span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message si aucune action -->
+            <div th:if="${#lists.isEmpty(actions)}" class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Aucune action caritative n'est disponible pour le moment.
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

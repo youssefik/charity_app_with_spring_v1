@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Faire un don - Charity App</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container py-4">
+            <div class="card shadow mx-auto" style="max-width: 600px;">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Faire un don</h4>
+                </div>
+                <div class="card-body">
+                    <h5 th:text="${action.title}">Titre de l'action</h5>
+                    <p th:text="${action.description}">Description...</p>
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Montant du don (€)</label>
+                        <input type="number" class="form-control" id="amount" name="amount" min="1" step="1" value="10" required>
+                    </div>
+                    <div id="paypal-button-container" class="mb-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- PayPal JS SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AfkDlnEwgNA7Sqsm0zbQFbfqvGCF3wByazSv-r1zIgJYQsoGCsSVo9nD0xUMmrj_TySfUzSgZOJpjvn8&currency=EUR"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const actionId = [[${action.id}]];
+        function getDonationAmount() {
+            return document.getElementById('amount').value || 1;
+        }
+        paypal.Buttons({
+            style: { shape: 'rect', color: 'blue', layout: 'vertical', label: 'donate' },
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: { value: getDonationAmount() },
+                        description: 'Don pour ' + '[[${action.title}]]'
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    fetch('/donation/success', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            'paymentId': details.id,
+                            'payerId': details.payer.payer_id,
+                            'actionId': actionId,
+                            'amount': getDonationAmount()
+                        })
+                    }).then(response => {
+                        if (response.ok) {
+                            window.location.href = '/donation/success';
+                        } else {
+                            window.location.href = '/donation/cancel';
+                        }
+                    });
+                });
+            },
+            onCancel: function (data) {
+                window.location.href = '/donation/cancel';
+            },
+            onError: function (err) {
+                window.location.href = '/donation/cancel';
+            }
+        }).render('#paypal-button-container');
+        /*]]>*/
+    </script>
+</body>
+</html> 

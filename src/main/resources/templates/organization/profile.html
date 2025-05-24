@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Profil de l'organisation</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+        }
+        .sidebar .nav-link {
+            color: #fff;
+            padding: 1rem;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #495057;
+        }
+        .sidebar .nav-link.active {
+            background-color: #007bff;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .profile-header {
+            background-color: #f8f9fa;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        .cover-image {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .social-media-links a {
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="sidebar-sticky">
+                    <div class="text-center py-4">
+                        <h4 class="text-white" th:text="${organization.name}">Nom de l'organisation</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard}">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Tableau de bord
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/actions}">
+                                <i class="fas fa-hands-helping"></i>
+                                Actions caritatives
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/donations}">
+                                <i class="fas fa-hand-holding-usd"></i>
+                                Dons
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/organization/dashboard/reports}">
+                                <i class="fas fa-chart-bar"></i>
+                                Rapports
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" th:href="@{/organization/dashboard/profile}">
+                                <i class="fas fa-user-cog"></i>
+                                Profil
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <!-- Messages Flash -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                    <span th:text="${success}"></span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- Profile Header -->
+                <div class="profile-header">
+                    <div class="container">
+                        <div class="row align-items-center">
+                            <div class="col-md-3 text-center">
+                                <img th:src="${organization.logoUrl}" alt="Logo" class="profile-image mb-3">
+                                <form th:action="@{/organization/dashboard/profile/logo}" method="post" enctype="multipart/form-data" class="mb-3">
+                                    <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="logo" name="logo" accept="image/*">
+                                        <label class="btn btn-outline-primary btn-sm" for="logo">Changer le logo</label>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-md-9">
+                                <h1 th:text="${organization.name}">Nom de l'organisation</h1>
+                                <p class="lead" th:text="${organization.description}">Description</p>
+                                <div class="social-media-links">
+                                    <a th:href="${organization.socialMediaFacebook}" target="_blank" th:if="${organization.socialMediaFacebook}">
+                                        <i class="fab fa-facebook"></i>
+                                    </a>
+                                    <a th:href="${organization.socialMediaTwitter}" target="_blank" th:if="${organization.socialMediaTwitter}">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                                    <a th:href="${organization.socialMediaInstagram}" target="_blank" th:if="${organization.socialMediaInstagram}">
+                                        <i class="fab fa-instagram"></i>
+                                    </a>
+                                    <a th:href="${organization.socialMediaLinkedin}" target="_blank" th:if="${organization.socialMediaLinkedin}">
+                                        <i class="fab fa-linkedin"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Content -->
+                <div class="container">
+                    <div class="row">
+                        <!-- Informations générales -->
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Informations générales</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form th:action="@{/organization/dashboard/profile/update}" th:object="${updateRequest}" method="post">
+                                        <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                                        
+                                        <div class="form-group">
+                                            <label for="name">Nom de l'organisation</label>
+                                            <input type="text" class="form-control" id="name" th:field="*{name}" required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="description">Description</label>
+                                            <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="email">Email de contact</label>
+                                            <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="phoneNumber">Numéro de téléphone</label>
+                                            <input type="tel" class="form-control" id="phoneNumber" th:field="*{phoneNumber}">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="website">Site web</label>
+                                            <input type="url" class="form-control" id="website" th:field="*{website}">
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informations bancaires -->
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Informations bancaires</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form th:action="@{/organization/dashboard/profile/banking}" method="post">
+                                        <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                                        
+                                        <div class="form-group">
+                                            <label for="bankAccountName">Nom du compte</label>
+                                            <input type="text" class="form-control" id="bankAccountName" name="bankAccountName" th:value="${organization.bankAccountName}">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="bankAccountNumber">Numéro de compte</label>
+                                            <input type="text" class="form-control" id="bankAccountNumber" name="bankAccountNumber" th:value="${organization.bankAccountNumber}">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="bankName">Nom de la banque</label>
+                                            <input type="text" class="form-control" id="bankName" name="bankName" th:value="${organization.bankName}">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="bankSwift">Code SWIFT</label>
+                                            <input type="text" class="form-control" id="bankSwift" name="bankSwift" th:value="${organization.bankSwift}">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="paypalEmail">Email PayPal</label>
+                                            <input type="email" class="form-control" id="paypalEmail" name="paypalEmail" th:value="${organization.paypalEmail}">
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Réseaux sociaux -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Réseaux sociaux</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form th:action="@{/organization/dashboard/profile/social}" method="post">
+                                        <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                                        
+                                        <div class="form-group">
+                                            <label for="facebook">Facebook</label>
+                                            <input type="url" class="form-control" id="facebook" name="facebook" th:value="${organization.socialMediaFacebook}">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="twitter">Twitter</label>
+                                            <input type="url" class="form-control" id="twitter" name="twitter" th:value="${organization.socialMediaTwitter}">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="instagram">Instagram</label>
+                                            <input type="url" class="form-control" id="instagram" name="instagram" th:value="${organization.socialMediaInstagram}">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="linkedin">LinkedIn</label>
+                                            <input type="url" class="form-control" id="linkedin" name="linkedin" th:value="${organization.socialMediaLinkedin}">
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html> 

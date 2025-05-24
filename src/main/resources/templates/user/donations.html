@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Mes dons</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <h2 class="mb-4">Mes dons</h2>
+            
+            <!-- Alerte de succès après un don -->
+            <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.success}">
+                <i class="fas fa-check-circle mr-2"></i> Votre don a été traité avec succès. Merci pour votre générosité !
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <!-- Liste des dons -->
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover datatable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Organisation</th>
+                                    <th>Action</th>
+                                    <th>Montant</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="donation : ${donations}">
+                                    <td th:text="${#temporals.format(donation.createdAt, 'dd/MM/yyyy')}">01/01/2023</td>
+                                    <td th:text="${donation.organization.name}">Organisation caritative</td>
+                                    <td th:text="${donation.action.title}">Titre de l'action</td>
+                                    <td th:text="${#numbers.formatDecimal(donation.amount, 0, 'COMMA', 2, 'POINT')} + ' €'">50.00 €</td>
+                                    <td>
+                                        <span class="badge badge-success" th:if="${donation.status == 'COMPLETED'}">Complété</span>
+                                        <span class="badge badge-warning" th:if="${donation.status == 'PENDING'}">En attente</span>
+                                        <span class="badge badge-danger" th:if="${donation.status == 'FAILED'}">Échoué</span>
+                                        <span class="badge badge-info" th:if="${donation.status == 'REFUNDED'}">Remboursé</span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{'/user/donations/' + ${donation.id}}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> Détails
+                                        </a>
+                                        <a th:if="${donation.receiptRequested && donation.status == 'COMPLETED' && donation.receiptUrl != null}"
+                                           th:href="${donation.receiptUrl}" target="_blank" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-file-invoice"></i> Reçu
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(donations)}">
+                                    <td colspan="6" class="text-center">
+                                        <p class="my-3 text-muted">Vous n'avez pas encore effectué de dons.</p>
+                                        <a th:href="@{/actions}" class="btn btn-primary">
+                                            <i class="fas fa-search"></i> Découvrir des actions
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statistiques -->
+            <div class="row mt-4" th:if="${!#lists.isEmpty(donations)}">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total des dons</h5>
+                            <h3 class="mb-0" th:text="${#numbers.formatDecimal(donations.stream().filter(d -> d.status == 'COMPLETED').map(d -> d.amount).sum(), 0, 'COMMA', 2, 'POINT')} + ' €'">150.00 €</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Nombre de dons</h5>
+                            <h3 class="mb-0" th:text="${donations.stream().filter(d -> d.status == 'COMPLETED').count()}">3</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Actions soutenues</h5>
+                            <h3 class="mb-0" th:text="${donations.stream().filter(d -> d.status == 'COMPLETED').map(d -> d.action.id).distinct().count()}">2</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

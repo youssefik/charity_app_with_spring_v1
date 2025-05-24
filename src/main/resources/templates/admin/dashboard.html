@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tableau de Bord Admin | Charity App</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+
+        <!-- Right navbar links -->
+        <ul class="navbar-nav ml-auto">
+            <!-- Language Dropdown -->
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="fas fa-globe"></i>
+                    <span th:text="${#locale.language == 'fr' ? 'FR' : 'AR'}">FR</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a href="?lang=fr" class="dropdown-item">Français</a>
+                    <a href="?lang=ar" class="dropdown-item">العربية</a>
+                </div>
+            </li>
+            <!-- User Dropdown Menu -->
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="fas fa-user-circle mr-2"></i>
+                    <span th:text="${#authentication.name}">Admin</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a href="/profile" class="dropdown-item">
+                        <i class="fas fa-user-cog mr-2"></i> Mon Profil
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <form th:action="@{/logout}" method="post" class="dropdown-item">
+                        <button type="submit" class="btn btn-link p-0 m-0" style="text-decoration: none;">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Déconnexion
+                        </button>
+                    </form>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="/admin/dashboard" class="brand-link">
+            <span class="brand-text font-weight-light">Charity App Admin</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                    <li class="nav-item">
+                        <a href="/admin/dashboard" class="nav-link active">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>Tableau de Bord</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/organizations/pending" class="nav-link">
+                            <i class="nav-icon fas fa-clock"></i>
+                            <p>Organisations en Attente</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/organizations" class="nav-link">
+                            <i class="nav-icon fas fa-building"></i>
+                            <p>Organisations</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/users" class="nav-link">
+                            <i class="nav-icon fas fa-users"></i>
+                            <p>Utilisateurs</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/actions" class="nav-link">
+                            <i class="nav-icon fas fa-hands-helping"></i>
+                            <p>Actions de Charité</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/donations" class="nav-link">
+                            <i class="nav-icon fas fa-hand-holding-heart"></i>
+                            <p>Dons</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/categories" class="nav-link">
+                            <i class="nav-icon fas fa-tags"></i>
+                            <p>Catégories</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/reports" class="nav-link">
+                            <i class="nav-icon fas fa-chart-bar"></i>
+                            <p>Rapports</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/settings" class="nav-link">
+                            <i class="nav-icon fas fa-cog"></i>
+                            <p>Paramètres</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Content Header -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Tableau de Bord</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="content">
+        <div class="container-fluid">
+            <!-- Statistiques -->
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3 th:text="${stats.totalAmount + '€'}">0€</h3>
+                                <p>Total des Dons</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-euro-sign"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3 th:text="${stats.totalUsers}">0</h3>
+                            <p>Utilisateurs</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <span class="small">+<span th:text="${stats.newUsersThisMonth}">0</span> ce mois</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3 th:text="${stats.totalOrganizations}">0</h3>
+                            <p>Organisations</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <span class="small"><span th:text="${stats.pendingOrganizations}">0</span> en attente</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                        <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3 th:text="${stats.totalActions}">0</h3>
+                            <p>Actions</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-hands-helping"></i>
+                        </div>
+                        <span class="small"><span th:text="${stats.activeActions}">0</span> actives</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                    <!-- Activités récentes et Organisations en attente -->
+                    <div class="col-lg-8">
+                <!-- Activités récentes -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Activités récentes</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Utilisateur</th>
+                                            <th>Action</th>
+                                            <th>Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="activity : ${recentActivities}">
+                                            <td th:text="${#temporals.format(activity.date, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
+                                            <td th:text="${activity.userName}">Utilisateur</td>
+                                            <td th:text="${activity.description}">Description</td>
+                                            <td>
+                                                <span th:class="${'badge bg-' + activity.statusColor}" th:text="${activity.status}">Statut</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                        <!-- Organisations en attente -->
+                    <div class="card">
+                        <div class="card-header">
+                                <h3 class="card-title">Organisations en attente d'approbation</h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Nom</th>
+                                                <th>Date de création</th>
+                                                <th>Contact</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="org : ${pendingOrganizations}">
+                                                <td th:text="${org.name}">Organisation</td>
+                                                <td th:text="${#temporals.format(org.registrationDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                                                <td th:text="${org.contactEmail}">contact@org.com</td>
+                                                <td>
+                                                    <a th:href="@{/admin/organizations/{id}/view(id=${org.id})}" class="btn btn-xs btn-info">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a th:href="@{/admin/organizations/{id}/approve(id=${org.id})}" class="btn btn-xs btn-success">
+                                                        <i class="fas fa-check"></i>
+                                                    </a>
+                                                    <a th:href="@{/admin/organizations/{id}/reject(id=${org.id})}" class="btn btn-xs btn-danger">
+                                                        <i class="fas fa-times"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions rapides et statistiques -->
+                <div class="col-lg-4">
+                        <!-- Actions rapides -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Actions rapides</h3>
+                        </div>
+                        <div class="card-body">
+                            <a th:href="@{/admin/organizations/pending}" class="btn btn-block btn-outline-primary mb-2">
+                                <i class="fas fa-building me-2"></i> Gérer les organisations
+                            </a>
+                            <a th:href="@{/admin/users}" class="btn btn-block btn-outline-primary mb-2">
+                                <i class="fas fa-users me-2"></i> Gérer les utilisateurs
+                            </a>
+                                <a th:href="@{/admin/actions}" class="btn btn-block btn-outline-primary mb-2">
+                                    <i class="fas fa-hands-helping me-2"></i> Gérer les actions
+                            </a>
+                            <a th:href="@{/admin/categories}" class="btn btn-block btn-outline-primary mb-2">
+                                <i class="fas fa-tags me-2"></i> Gérer les catégories
+                            </a>
+                            <a th:href="@{/admin/reports}" class="btn btn-block btn-outline-primary">
+                                <i class="fas fa-chart-bar me-2"></i> Voir les rapports
+                            </a>
+                        </div>
+                    </div>
+
+                        <!-- Dons récents -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                                <h3 class="card-title">Dons récents</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush">
+                                    <li th:each="donation : ${recentDonations}" class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1" th:text="${donation.donorName}">Donateur</h6>
+                                            <small th:text="${#temporals.format(donation.date, 'dd/MM/yyyy')}">01/01/2024</small>
+                                    </div>
+                                        <p class="mb-1" th:text="${donation.amount + '€ pour ' + donation.actionName}">Montant</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                        <!-- État du système -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">État du système</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Serveur
+                                    <span class="badge bg-success">En ligne</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Base de données
+                                    <span class="badge bg-success">Connectée</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Stockage
+                                    <span class="badge bg-info" th:text="${systemStatus.storageUsage}">0%</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    CPU
+                                    <span class="badge bg-info" th:text="${systemStatus.cpuUsage}">0%</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Mémoire
+                                    <span class="badge bg-info" th:text="${systemStatus.memoryUsage}">0%</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="float-right d-none d-sm-block">
+            <b>Version</b> 1.0.0
+        </div>
+        <strong>Copyright &copy; 2024 <a href="#">Charity App</a>.</strong>
+    </footer>
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script th:inline="javascript">
+            // Donation Chart
+            var ctx = document.getElementById('donationChart').getContext('2d');
+            var donationData = /*[[${donationStats}]]*/ {};
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: donationData.labels,
+                    datasets: [{
+                        label: 'Dons',
+                        data: donationData.values,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+    // Initialize DataTables
+    $(document).ready(function() {
+        $('.table').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json"
+            }
+        });
+            });
+        </script>
+</body>
+</html>
